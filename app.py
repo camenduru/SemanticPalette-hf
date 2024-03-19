@@ -80,8 +80,8 @@ opt = parser.parse_args()
 
 ### Global variables and data structures
 
-# device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
-device = 'cuda'
+device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
+# device = 'cuda'
 
 
 model_dict = {
