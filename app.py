@@ -508,7 +508,7 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as demo:
         """
 <div style="display: flex; justify-content: center; align-items: center; text-align: center;">
     <div>
-        <h1>🧠 Semantic Paint 🎨</h1>
+        <h1>🧠 Semantic Palette 🎨</h1>
         <h5 style="margin: 0;">powered by</h5>
         <h3><a href="https://jaerinlee.com/research/StreamMultiDiffusion">StreamMultiDiffusion: Real-Time Interactive Generation with Region-Based Semantic Control</a></h3>
         <h5 style="margin: 0;">If you ❤️ our project, please visit our Github and give us a 🌟!</h5>
