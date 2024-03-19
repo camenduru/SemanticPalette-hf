@@ -102,7 +102,7 @@ model_dict = {
 }
 
 models = {
-    k: StableMultiDiffusionPipeline(device, dtype=torch.float32, sd_version='1.5', hf_key=v).cuda()
+    k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v).cuda()
     for k, v in model_dict.items()
 }
 
