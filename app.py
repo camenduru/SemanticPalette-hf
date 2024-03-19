@@ -82,14 +82,15 @@ opt.width = 1920
 opt.model = None
 opt.bootstrap_steps = 1
 opt.seed = -1
-opt.device = 0
+# opt.device = 0
 # opt.port = 8000
 
 
 ### Global variables and data structures
 
-device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
-# device = 'cuda'
+# device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(device)
 
 
 model_dict = {
@@ -101,7 +102,7 @@ model_dict = {
 }
 
 models = {
-    k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v)
+    k: StableMultiDiffusionPipeline(device, dtype=torch.float32, sd_version='1.5', hf_key=v).cuda()
     for k, v in model_dict.items()
 }
 
