@@ -38,7 +38,7 @@ class StableMultiDiffusionPipeline(nn.Module):
     def __init__(
         self,
         device: torch.device,
-        dtype: torch.dtype = torch.float16,
+        dtype: torch.dtype = torch.float32,
         sd_version: Literal['1.5', '2.0', '2.1', 'xl'] = '1.5',
         hf_key: Optional[str] = None,
         lora_key: Optional[str] = None,
@@ -128,7 +128,7 @@ class StableMultiDiffusionPipeline(nn.Module):
                 model_key = hf_key
             else:
                 model_key = 'runwayml/stable-diffusion-v1-5'
-                variant = 'fp16'
+                # variant = 'fp16'
             lora_key = 'latent-consistency/lcm-lora-sdv1-5'
             lora_weight_name = 'pytorch_lora_weights.safetensors'
         # elif self.sd_version == 'xl':
