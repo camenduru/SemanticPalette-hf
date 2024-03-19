@@ -88,7 +88,7 @@ model_dict = {
     'Real Cartoon Pixar V5': 'ironjr/RealCartoon-PixarV5',
     'Kohaku V2.1': 'KBlueLeaf/kohaku-v2.1',
     'Realistic Vision V5.1': 'ironjr/RealisticVisionV5-1',
-    'Stable Diffusion V1.5': 'runwayml/stable-diffusion-v1-5',
+    # 'Stable Diffusion V1.5': 'runwayml/stable-diffusion-v1-5',
 }
 
 models = {
