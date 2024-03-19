@@ -38,7 +38,7 @@ class StableMultiDiffusionPipeline(nn.Module):
     def __init__(
         self,
         device: torch.device,
-        dtype: torch.dtype = torch.float32,
+        dtype: torch.dtype = torch.float16,
         sd_version: Literal['1.5', '2.0', '2.1', 'xl'] = '1.5',
         hf_key: Optional[str] = None,
         lora_key: Optional[str] = None,
