@@ -80,7 +80,8 @@ opt = parser.parse_args()
 
 ### Global variables and data structures
 
-device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
+# device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
+device = 'cuda'
 
 
 model_dict = {
@@ -500,7 +501,7 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as demo:
     <div>
         <h1>🧠 Semantic Paint 🎨</h1>
         <h5 style="margin: 0;">powered by</h5>
-        <h3>StreamMultiDiffusion: Real-Time Interactive Generation with Region-Based Semantic Control</h3>
+        <h3><a href="https://jaerinlee.com/research/StreamMultiDiffusion">StreamMultiDiffusion: Real-Time Interactive Generation with Region-Based Semantic Control</a></h3>
         <h5 style="margin: 0;">If you ❤️ our project, please visit our Github and give us a 🌟!</h5>
         </br>
         <div style="display: flex; justify-content: center; align-items: center; text-align: center;">
