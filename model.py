@@ -166,7 +166,7 @@ class StableMultiDiffusionPipeline(nn.Module):
         self.vae_scale_factor = self.pipe.vae_scale_factor
 
         # Prepare white background for bootstrapping.
-        self.get_white_background(768, 768)
+        # self.get_white_background(768, 768) # This cause problem in HF ZeroGPU environment.
 
         print(f'[INFO] Model is loaded!')
 
