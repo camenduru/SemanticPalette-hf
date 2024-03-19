@@ -92,10 +92,11 @@ model_dict = {
     # 'Stable Diffusion V1.5': 'runwayml/stable-diffusion-v1-5',
 }
 
-models = {
-    k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v)
-    for k, v in model_dict.items()
-}
+with spaces.GPU:
+    models = {
+        k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v)
+        for k, v in model_dict.items()
+    }
 
 
 prompt_suggestions = [
