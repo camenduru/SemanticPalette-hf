@@ -67,15 +67,23 @@ def is_empty_image(im: Image.Image) -> bool:
 
 ### Argument passing
 
-parser = argparse.ArgumentParser(description='Semantic drawing demo powered by StreamMultiDiffusion.')
-parser.add_argument('-H', '--height', type=int, default=768)
-parser.add_argument('-W', '--width', type=int, default=1920)
-parser.add_argument('--model', type=str, default=None)
-parser.add_argument('--bootstrap_steps', type=int, default=1)
-parser.add_argument('--seed', type=int, default=-1)
-parser.add_argument('--device', type=int, default=0)
-parser.add_argument('--port', type=int, default=8000)
-opt = parser.parse_args()
+# parser = argparse.ArgumentParser(description='Semantic drawing demo powered by StreamMultiDiffusion.')
+# parser.add_argument('-H', '--height', type=int, default=768)
+# parser.add_argument('-W', '--width', type=int, default=1920)
+# parser.add_argument('--model', type=str, default=None)
+# parser.add_argument('--bootstrap_steps', type=int, default=1)
+# parser.add_argument('--seed', type=int, default=-1)
+# parser.add_argument('--device', type=int, default=0)
+# parser.add_argument('--port', type=int, default=8000)
+# opt = parser.parse_args()
+opt = argparse.Namespace()
+opt.height = 768
+opt.width = 1920
+opt.model = None
+opt.bootstrap_steps = 1
+opt.seed = -1
+opt.device = 0
+# opt.port = 8000
 
 
 ### Global variables and data structures
@@ -92,11 +100,10 @@ model_dict = {
     # 'Stable Diffusion V1.5': 'runwayml/stable-diffusion-v1-5',
 }
 
-with spaces.GPU:
-    models = {
-        k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v)
-        for k, v in model_dict.items()
-    }
+models = {
+    k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v)
+    for k, v in model_dict.items()
+}
 
 
 prompt_suggestions = [
