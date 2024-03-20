@@ -32,7 +32,6 @@ import numpy as np
 from PIL import Image
 import torch
 
-import spaces
 import gradio as gr
 from huggingface_hub import snapshot_download
 
@@ -288,7 +287,6 @@ def import_state(state, json_text):
 
 ### Main worker
 
-@spaces.GPU
 def generate(state, *args, **kwargs):
     return models[state.model_id](*args, **kwargs)
 
