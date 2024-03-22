@@ -101,7 +101,7 @@ model_dict = {
 }
 
 models = {
-    k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v).cuda()
+    k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v, has_i2t=False)
     for k, v in model_dict.items()
 }
 
