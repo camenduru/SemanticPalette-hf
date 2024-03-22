@@ -52,6 +52,7 @@ class StableMultiDiffusionPipeline(nn.Module):
         default_preprocess_mask_cover_alpha: float = 0.3,
         t_index_list: List[int] = [0, 4, 12, 25, 37], # [0, 5, 16, 18, 20, 37], # [0, 12, 25, 37], # Magic number.
         mask_type: Literal['discrete', 'semi-continuous', 'continuous'] = 'discrete',
+        has_i2t: bool = True,
     ) -> None:
         r"""Stabilized MultiDiffusion for fast sampling.
 
@@ -102,6 +103,9 @@ class StableMultiDiffusionPipeline(nn.Module):
                 smoothness of foreground-background blending. More continuous
                 means more blending, but smaller generated patch depending on
                 the mask standard deviation.
+            has_i2t (bool): Automatic background image to text prompt con-
+                version with BLIP-2 model. May not be necessary for the non-
+                streaming application.
         """
         super().__init__()
 
@@ -120,7 +124,6 @@ class StableMultiDiffusionPipeline(nn.Module):
         self.mask_type = mask_type
 
         print(f'[INFO] Loading Stable Diffusion...')
-        variant = None
         lora_weight_name = None
         if self.sd_version == '1.5':
             if hf_key is not None:
@@ -128,22 +131,24 @@ class StableMultiDiffusionPipeline(nn.Module):
                 model_key = hf_key
             else:
                 model_key = 'runwayml/stable-diffusion-v1-5'
-                # variant = 'fp16'
             lora_key = 'latent-consistency/lcm-lora-sdv1-5'
             lora_weight_name = 'pytorch_lora_weights.safetensors'
         # elif self.sd_version == 'xl':
         #     model_key = 'stabilityai/stable-diffusion-xl-base-1.0'
         #     lora_key = 'latent-consistency/lcm-lora-sdxl'
-        #     variant = 'fp16'
         #     lora_weight_name = 'pytorch_lora_weights.safetensors'
         else:
             raise ValueError(f'Stable Diffusion version {self.sd_version} not supported.')
 
         # Create model
-        # self.i2t_processor = Blip2Processor.from_pretrained('Salesforce/blip2-opt-2.7b')
-        # self.i2t_model = Blip2ForConditionalGeneration.from_pretrained('Salesforce/blip2-opt-2.7b')
+        if has_i2t:
+            self.i2t_processor = Blip2Processor.from_pretrained('Salesforce/blip2-opt-2.7b')
+            self.i2t_model = Blip2ForConditionalGeneration.from_pretrained('Salesforce/blip2-opt-2.7b')
 
-        self.pipe = DiffusionPipeline.from_pretrained(model_key, variant=variant, torch_dtype=dtype).to(self.device)
+        try:
+            self.pipe = DiffusionPipeline.from_pretrained(model_key, variant='fp16', torch_dtype=dtype).to(self.device)
+        except:
+            self.pipe = DiffusionPipeline.from_pretrained(model_key, variant=None, torch_dtype=dtype).to(self.device)
         if lora_key is None:
             print(f'[INFO] LCM LoRA is not available for SD version {sd_version}. Using DDIM Scheduler instead...')
             self.pipe.scheduler = DDIMScheduler.from_config(self.pipe.scheduler.config)
@@ -166,7 +171,7 @@ class StableMultiDiffusionPipeline(nn.Module):
         self.vae_scale_factor = self.pipe.vae_scale_factor
 
         # Prepare white background for bootstrapping.
-        # self.get_white_background(768, 768) # This cause problem in HF ZeroGPU environment.
+        self.get_white_background(768, 768)
 
         print(f'[INFO] Model is loaded!')
 
@@ -268,24 +273,27 @@ class StableMultiDiffusionPipeline(nn.Module):
         uncond_embeds = self.text_encoder(uncond_input.input_ids.to(self.device))[0]
         return uncond_embeds, text_embeds
 
-    # @torch.no_grad()
-    # def get_text_prompts(self, image: Image.Image) -> str:
-    #     r"""A convenient method to extract text prompt from an image.
+    @torch.no_grad()
+    def get_text_prompts(self, image: Image.Image) -> str:
+        r"""A convenient method to extract text prompt from an image.
 
-    #     This is called if the user does not provide background prompt but only
-    #     the background image. We use BLIP-2 to automatically generate prompts.
+        This is called if the user does not provide background prompt but only
+        the background image. We use BLIP-2 to automatically generate prompts.
 
-    #     Args:
-    #         image (Image.Image): A PIL image.
+        Args:
+            image (Image.Image): A PIL image.
 
-    #     Returns:
-    #         A single string of text prompt.
-    #     """
-    #     question = 'Question: What are in the image? Answer:'
-    #     inputs = self.i2t_processor(image, question, return_tensors='pt')
-    #     out = self.i2t_model.generate(**inputs, max_new_tokens=77)
-    #     prompt = self.i2t_processor.decode(out[0], skip_special_tokens=True).strip()
-    #     return prompt
+        Returns:
+            A single string of text prompt.
+        """
+        if hasattr(self, 'i2t_model'):
+            question = 'Question: What are in the image? Answer:'
+            inputs = self.i2t_processor(image, question, return_tensors='pt')
+            out = self.i2t_model.generate(**inputs, max_new_tokens=77)
+            prompt = self.i2t_processor.decode(out[0], skip_special_tokens=True).strip()
+            return prompt
+        else:
+            return ''
 
     @torch.no_grad()
     def encode_imgs(
@@ -961,8 +969,8 @@ class StableMultiDiffusionPipeline(nn.Module):
                 if background is None and background_prompt is None:
                     background = torch.ones(1, 3, height, width, dtype=self.dtype, device=self.device)
                     background_prompt = 'simple white background image'
-                # elif background is not None and background_prompt is None:
-                #     background_prompt = self.get_text_prompts(background)
+                elif background is not None and background_prompt is None:
+                    background_prompt = self.get_text_prompts(background)
                 if suffix is not None:
                     prompts = [p + suffix + background_prompt for p in prompts]
                 prompts = [background_prompt] + prompts

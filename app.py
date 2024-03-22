@@ -93,7 +93,7 @@ print(device)
 
 
 model_dict = {
-    'Blazing Drive V11m': 'ironjr/BlazingDriveV11m',
+    'MixTape_RocknRoll_v3punk_bake_fp16': 'digiplay/MixTape_RocknRoll_v3punk_bake_fp16',
     # 'Real Cartoon Pixar V5': 'ironjr/RealCartoon-PixarV5',
     # 'Kohaku V2.1': 'KBlueLeaf/kohaku-v2.1',
     # 'Realistic Vision V5.1': 'ironjr/RealisticVisionV5-1',
