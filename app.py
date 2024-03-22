@@ -40,10 +40,6 @@ from util import seed_everything
 
 
 ### Utils
-
-
-
-
 def log_state(state):
     pprint(vars(opt))
     if isinstance(state, gr.State):
@@ -66,39 +62,33 @@ def is_empty_image(im: Image.Image) -> bool:
 
 ### Argument passing
 
-# parser = argparse.ArgumentParser(description='Semantic drawing demo powered by StreamMultiDiffusion.')
-# parser.add_argument('-H', '--height', type=int, default=768)
-# parser.add_argument('-W', '--width', type=int, default=1920)
-# parser.add_argument('--model', type=str, default=None)
-# parser.add_argument('--bootstrap_steps', type=int, default=1)
-# parser.add_argument('--seed', type=int, default=-1)
-# parser.add_argument('--device', type=int, default=0)
-# parser.add_argument('--port', type=int, default=8000)
-# opt = parser.parse_args()
-opt = argparse.Namespace()
-opt.height = 768
-opt.width = 1920
-opt.model = None
-opt.bootstrap_steps = 1
-opt.seed = -1
-# opt.device = 0
-# opt.port = 8000
+parser = argparse.ArgumentParser(description='Semantic Palette demo powered by StreamMultiDiffusion.')
+parser.add_argument('-H', '--height', type=int, default=768)
+parser.add_argument('-W', '--width', type=int, default=1920)
+parser.add_argument('--model', type=str, default=None, help='Hugging face model repository or local path for a SD1.5 model checkpoint to run.')
+parser.add_argument('--bootstrap_steps', type=int, default=1)
+parser.add_argument('--seed', type=int, default=-1)
+parser.add_argument('--device', type=int, default=0)
+parser.add_argument('--port', type=int, default=8000)
+opt = parser.parse_args()
 
 
 ### Global variables and data structures
 
-# device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(device)
+device = f'cuda:{opt.device}' if opt.device >= 0 else 'cpu'
 
 
-model_dict = {
-    'MixTape_RocknRoll_v3punk_bake_fp16': 'digiplay/MixTape_RocknRoll_v3punk_bake_fp16',
-    # 'Real Cartoon Pixar V5': 'ironjr/RealCartoon-PixarV5',
-    # 'Kohaku V2.1': 'KBlueLeaf/kohaku-v2.1',
-    # 'Realistic Vision V5.1': 'ironjr/RealisticVisionV5-1',
-    # 'Stable Diffusion V1.5': 'runwayml/stable-diffusion-v1-5',
-}
+if opt.model is None:
+    model_dict = {
+        # 'MixTape_RocknRoll_v3punk_bake_fp16': 'digiplay/MixTape_RocknRoll_v3punk_bake_fp16',
+        'Blazing Drive V11m': 'ironjr/BlazingDriveV11m',
+        # 'Real Cartoon Pixar V5': 'ironjr/RealCartoon-PixarV5',
+        # 'Kohaku V2.1': 'KBlueLeaf/kohaku-v2.1',
+        # 'Realistic Vision V5.1': 'ironjr/RealisticVisionV5-1',
+        # 'Stable Diffusion V1.5': 'runwayml/stable-diffusion-v1-5',
+    }
+else:
+    model_dict = {opt.model: opt.model}
 
 models = {
     k: StableMultiDiffusionPipeline(device, sd_version='1.5', hf_key=v, has_i2t=False)
@@ -286,7 +276,6 @@ def import_state(state, json_text):
 
 
 ### Main worker
-
 def generate(state, *args, **kwargs):
     return models[state.model_id](*args, **kwargs)
 
@@ -364,6 +353,7 @@ def run(state, drawpad):
 
 
 root = pathlib.Path(__file__).parent
+print(root)
 example_root = os.path.join(root, 'examples')
 example_images = glob.glob(os.path.join(example_root, '*.png'))
 example_images = [Image.open(i) for i in example_images]
@@ -506,9 +496,9 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as demo:
         """
 <div style="display: flex; justify-content: center; align-items: center; text-align: center;">
     <div>
-        <h1>🧠 Semantic Palette 🎨</h1>
+        <h1>🧠 Semantic Paint 🎨</h1>
         <h5 style="margin: 0;">powered by</h5>
-        <h3><a href="https://jaerinlee.com/research/StreamMultiDiffusion">StreamMultiDiffusion: Real-Time Interactive Generation with Region-Based Semantic Control</a></h3>
+        <h3>StreamMultiDiffusion: Real-Time Interactive Generation with Region-Based Semantic Control</h3>
         <h5 style="margin: 0;">If you ❤️ our project, please visit our Github and give us a 🌟!</h5>
         </br>
         <div style="display: flex; justify-content: center; align-items: center; text-align: center;">
@@ -534,6 +524,10 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as demo:
             &nbsp;
             <a href='https://huggingface.co/papers/2403.09055'>
                 <img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Paper-yellow'>
+            </a>
+            &nbsp;
+            <a href='https://huggingface.co/spaces/ironjr/SemanticPalette'>
+                <img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-yellow'>
             </a>
         </div>
     </div>
@@ -616,17 +610,6 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as demo:
 </div>
                 """
             )
-
-            gr.HTML(
-                """
-<div style="display: flex; justify-content: center; align-items: center; text-align: center;">
-<h5 style="margin: 0;"><b>... or run in your own 🤗 space!</b></h5>
-</div>
-                """
-            )
-
-            gr.DuplicateButton()
-
         with gr.Column(scale=4):
 
             with gr.Row():
@@ -824,4 +807,4 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as demo:
 
 
 if __name__ == '__main__':
-    demo.queue(max_size=20).launch(share=True)
+    demo.launch(server_port=opt.port, share=True)
