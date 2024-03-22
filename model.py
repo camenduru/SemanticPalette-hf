@@ -140,8 +140,8 @@ class StableMultiDiffusionPipeline(nn.Module):
             raise ValueError(f'Stable Diffusion version {self.sd_version} not supported.')
 
         # Create model
-        self.i2t_processor = Blip2Processor.from_pretrained('Salesforce/blip2-opt-2.7b')
-        self.i2t_model = Blip2ForConditionalGeneration.from_pretrained('Salesforce/blip2-opt-2.7b')
+        # self.i2t_processor = Blip2Processor.from_pretrained('Salesforce/blip2-opt-2.7b')
+        # self.i2t_model = Blip2ForConditionalGeneration.from_pretrained('Salesforce/blip2-opt-2.7b')
 
         self.pipe = DiffusionPipeline.from_pretrained(model_key, variant=variant, torch_dtype=dtype).to(self.device)
         if lora_key is None:
@@ -268,24 +268,24 @@ class StableMultiDiffusionPipeline(nn.Module):
         uncond_embeds = self.text_encoder(uncond_input.input_ids.to(self.device))[0]
         return uncond_embeds, text_embeds
 
-    @torch.no_grad()
-    def get_text_prompts(self, image: Image.Image) -> str:
-        r"""A convenient method to extract text prompt from an image.
+    # @torch.no_grad()
+    # def get_text_prompts(self, image: Image.Image) -> str:
+    #     r"""A convenient method to extract text prompt from an image.
 
-        This is called if the user does not provide background prompt but only
-        the background image. We use BLIP-2 to automatically generate prompts.
+    #     This is called if the user does not provide background prompt but only
+    #     the background image. We use BLIP-2 to automatically generate prompts.
 
-        Args:
-            image (Image.Image): A PIL image.
+    #     Args:
+    #         image (Image.Image): A PIL image.
 
-        Returns:
-            A single string of text prompt.
-        """
-        question = 'Question: What are in the image? Answer:'
-        inputs = self.i2t_processor(image, question, return_tensors='pt')
-        out = self.i2t_model.generate(**inputs, max_new_tokens=77)
-        prompt = self.i2t_processor.decode(out[0], skip_special_tokens=True).strip()
-        return prompt
+    #     Returns:
+    #         A single string of text prompt.
+    #     """
+    #     question = 'Question: What are in the image? Answer:'
+    #     inputs = self.i2t_processor(image, question, return_tensors='pt')
+    #     out = self.i2t_model.generate(**inputs, max_new_tokens=77)
+    #     prompt = self.i2t_processor.decode(out[0], skip_special_tokens=True).strip()
+    #     return prompt
 
     @torch.no_grad()
     def encode_imgs(
@@ -961,8 +961,8 @@ class StableMultiDiffusionPipeline(nn.Module):
                 if background is None and background_prompt is None:
                     background = torch.ones(1, 3, height, width, dtype=self.dtype, device=self.device)
                     background_prompt = 'simple white background image'
-                elif background is not None and background_prompt is None:
-                    background_prompt = self.get_text_prompts(background)
+                # elif background is not None and background_prompt is None:
+                #     background_prompt = self.get_text_prompts(background)
                 if suffix is not None:
                     prompts = [p + suffix + background_prompt for p in prompts]
                 prompts = [background_prompt] + prompts
